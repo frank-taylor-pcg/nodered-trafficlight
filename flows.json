@@ -1,0 +1,335 @@
+[
+    {
+        "id": "f6f2187d.f17ca8",
+        "type": "tab",
+        "label": "Globals",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "cda086745227b7be",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "2a9816bafc32a725",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "mosquitto",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "3cc11d24.ff01a2",
+        "type": "comment",
+        "z": "f6f2187d.f17ca8",
+        "name": "WARNING: please check you have started this container with a volume that is mounted to /data\\n otherwise any flow changes are lost when you redeploy or upgrade the container\\n (e.g. upgrade to a more recent node-red docker image).\\n  If you are using named volumes you can ignore this warning.\\n Double click or see info side panel to learn how to start Node-RED in Docker to save your work",
+        "info": "\nTo start docker with a bind mount volume (-v option), for example:\n\n```\ndocker run -it -p 1880:1880 -v /home/user/node_red_data:/data --name mynodered nodered/node-red\n```\n\nwhere `/home/user/node_red_data` is a directory on your host machine where you want to store your flows.\n\nIf you do not do this then you can experiment and redploy flows, but if you restart or upgrade the container the flows will be disconnected and lost. \n\nThey will still exist in a hidden data volume, which can be recovered using standard docker techniques, but that is much more complex than just starting with a named volume as described above.",
+        "x": 350,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "b8fdd11bef788ac5",
+        "type": "inject",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0",
+        "topic": "",
+        "x": 130,
+        "y": 300,
+        "wires": [
+            [
+                "379989d09f67dfc3"
+            ]
+        ]
+    },
+    {
+        "id": "379989d09f67dfc3",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Define helper functions",
+        "func": "const Helper = {\n    success: function (node, text) {\n        node.status({ fill: 'green', shape: 'dot', text: text });\n    },\n    info: function (node, text) {\n        node.status({ fill: 'blue', shape: 'dot', text: text });\n    },\n    warn: function (node, text) {\n        node.status({ fill: 'yellow', shape: 'dot', text: text });\n    },\n    error: function (node, text) {\n        node.status({ fill: 'red', shape: 'dot', text: text });\n    },\n    isnull: function (obj) {\n        return (obj == null || obj == undefined);\n    }\n}\n\nglobal.set(\"Helper\", Helper);\nnode.status({ fill: 'blue', shape: 'ring', text: 'OK' });\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 300,
+        "wires": [
+            [
+                "9eb2a43b3caeee67"
+            ]
+        ]
+    },
+    {
+        "id": "22112b4ee4d49bf4",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Set up TrafficLight class",
+        "func": "let helper = global.get('Helper');\nlet library = global.get(\"Library\") || {};\n\nclass TrafficLight {\n    constructor() {\n        this.State = library.TrafficLightState.RED;\n    }\n\n    toString() {\n        return {... this};\n    }\n};\n\nlibrary.TrafficLight = TrafficLight;\nglobal.set(\"Library\", library);\n\nhelper.info(node, 'TrafficLight class setup okay');\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 420,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9eb2a43b3caeee67",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "Set up TrafficLightState constant",
+        "func": "let helper = global.get('Helper');\nlet library = global.get(\"Library\") || {};\n\nconst TrafficLightState = {\n    GREEN: 'green',\n    YELLOW: 'yellow',\n    RED: 'red',\n};\n\nlibrary.TrafficLightState = TrafficLightState;\nglobal.set(\"Library\", library);\n\nhelper.info(node, 'TrafficLightState constants setup okay');\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 360,
+        "wires": [
+            [
+                "22112b4ee4d49bf4"
+            ]
+        ]
+    },
+    {
+        "id": "3dabc4120fbef3f4",
+        "type": "mqtt out",
+        "z": "cda086745227b7be",
+        "name": "",
+        "topic": "trafficlights",
+        "qos": "2",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "2a9816bafc32a725",
+        "x": 1170,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "fa13d075c5a96979",
+        "type": "inject",
+        "z": "cda086745227b7be",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "ChangeLight",
+        "payloadType": "str",
+        "x": 730,
+        "y": 600,
+        "wires": [
+            [
+                "c32fc8c726b11a73"
+            ]
+        ]
+    },
+    {
+        "id": "f8f76dbaa7b032fe",
+        "type": "mqtt in",
+        "z": "cda086745227b7be",
+        "name": "",
+        "topic": "trafficlights",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "2a9816bafc32a725",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 400,
+        "y": 540,
+        "wires": [
+            [
+                "759bdfcba7f82f7d"
+            ]
+        ]
+    },
+    {
+        "id": "759bdfcba7f82f7d",
+        "type": "switch",
+        "z": "cda086745227b7be",
+        "name": "",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "Lights Changed",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "Emergency Vehicle",
+                "vt": "str"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 2,
+        "x": 550,
+        "y": 540,
+        "wires": [
+            [
+                "6fb5a4f60dee6112"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "6fb5a4f60dee6112",
+        "type": "countdown",
+        "z": "cda086745227b7be",
+        "name": "",
+        "topic": "",
+        "payloadTimerStart": "",
+        "payloadTimerStartType": "nul",
+        "payloadTimerStop": "true",
+        "payloadTimerStopType": "bool",
+        "timer": "10",
+        "resetWhileRunning": false,
+        "outputOnReset": true,
+        "setTimeToNewWhileRunning": true,
+        "startCountdownOnControlMessage": false,
+        "x": 730,
+        "y": 520,
+        "wires": [
+            [
+                "6024b14744db7292",
+                "c32fc8c726b11a73"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "6024b14744db7292",
+        "type": "debug",
+        "z": "cda086745227b7be",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1160,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "c32fc8c726b11a73",
+        "type": "function",
+        "z": "cda086745227b7be",
+        "name": "Create message",
+        "func": "let msg_id = flow.get('msg_id');\n\nmsg.payload = `ChangeLight ${msg_id}`;\n\nmsg_id += 1;\n\nflow.set('msg_id', msg_id);\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 980,
+        "y": 560,
+        "wires": [
+            [
+                "3dabc4120fbef3f4"
+            ]
+        ]
+    },
+    {
+        "id": "5aea0a2a08c5d076",
+        "type": "inject",
+        "z": "cda086745227b7be",
+        "name": "",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "0",
+        "topic": "",
+        "x": 370,
+        "y": 360,
+        "wires": [
+            [
+                "e778face6ac04fe0"
+            ]
+        ]
+    },
+    {
+        "id": "e778face6ac04fe0",
+        "type": "change",
+        "z": "cda086745227b7be",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "msg_id",
+                "pt": "flow",
+                "to": "0",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 540,
+        "y": 360,
+        "wires": [
+            []
+        ]
+    }
+]
